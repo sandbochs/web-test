@@ -22,6 +22,7 @@ inventories / InventoryModel
 - time timestamptz
 - max_size integer
 - max_parties integer
+- createdAt
 
 reservations / ReservationModel
 - id serial
@@ -30,6 +31,7 @@ reservations / ReservationModel
 - email text
 - size integer
 - time timestamptz // duplicated data
+- createdAt
 
 ### Tradeoffs
 Duplicating the time column in the reservations table introduces the possibility of the column desyncing from the related inventory row. While this is not an issue since there is no requirement to update existing inventories, it can be handled by an application enforced constrait where inventories with existing reservations cannot update the time column. From a product pov, this also makes sense because restaurants wouldn't want to change reservation times without reaching out to the customer first. Data duplication also takes additional space, but adding a single 8 byte column shouldn't be an issue.

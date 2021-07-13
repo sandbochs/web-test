@@ -13,6 +13,9 @@ export class Restaurant extends Model<Restaurant> {
   @Column({ autoIncrement: true })
   id: number
 
+  // Defined in ./relations.ts
+  // @BelongsTo(() => Inventory)
+
   @Column
   name: string
 
@@ -20,11 +23,11 @@ export class Restaurant extends Model<Restaurant> {
   address: string
 
   @DeletedAt
-  deleted_at: string
+  deletedAt: string
 
   @CreatedAt
-  created_at: string
+  createdAt: string
 
   @UpdatedAt
-  updated_at: string
+  updatedAt: string
 }
