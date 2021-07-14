@@ -3,10 +3,10 @@ import {
   Column,
   CreatedAt,
   DataType,
-  Index,
   Model,
   PrimaryKey, Table,
 } from 'sequelize-typescript'
+import { Op } from 'sequelize'
 
 import { CodedError, errors as allErrors } from '../lib/coded-error'
 import {
@@ -69,5 +69,25 @@ export class Inventory extends Model<Inventory> {
     if(typeof maxParties !== 'number') {
       throw new CodedError(errors.INVALID_MAX_PARTIES)
     }
+  }
+
+  static async findBySizeAndTime(params: { size: number, time: string }) {
+    const { size, time } = params
+
+    return Inventory.findOne({
+      where: {
+        [Op.and]: {
+          maxSize: {
+            [Op.or]: {
+              [Op.eq]: size,
+              [Op.gt]: size,
+            }
+          },
+          time: {
+            [Op.eq]: time,
+          }
+        }
+      }
+    })
   }
 }

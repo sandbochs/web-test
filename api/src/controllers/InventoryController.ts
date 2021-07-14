@@ -3,7 +3,6 @@ import { NextFunction, Request, Response } from 'express'
 import { UniqueConstraintError } from 'sequelize'
 
 import { CodedError, errors as allErrors } from '../lib/coded-error'
-import * as middlewares from '../middlewares'
 import { Inventory } from '../models'
 
 const { inventory: inventoryErrors } = allErrors;

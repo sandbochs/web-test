@@ -104,7 +104,7 @@ Error responses will include the error (string) and code (integer) properties. T
 ```
 
 ### Create Reservation
-`POST /inventories/:inventoryId/reservations`
+`POST /reservations`
 
 #### Body
 ```js
@@ -133,11 +133,7 @@ Error responses will include the error (string) and code (integer) properties. T
 ```
 
 ```js
-{ code: 1101, error: 'Inventory not configured for that time and party size' }
-```
-
-```js
-{ code: 1102, error: 'No more reservations available for that time' }
+{ code: 1101, error: 'No more reservations available for that time' }
 ```
 
 ## Ensuring inventory is not overbooked

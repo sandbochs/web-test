@@ -4,6 +4,7 @@ import {
   Column,
   CreatedAt,
   DataType,
+  Index,
   Model,
   PrimaryKey, Table,
 } from 'sequelize-typescript'
@@ -27,6 +28,7 @@ export class Reservation extends Model<Reservation> {
   size: number
 
   @AllowNull(false)
+  @Index
   @Column(DataType.DATEONLY)
   date: string
 
@@ -36,4 +38,8 @@ export class Reservation extends Model<Reservation> {
 
   @CreatedAt
   createdAt: string
+
+  static validate(params: { [key: string]: any }) {
+    // TODO
+  }
 }

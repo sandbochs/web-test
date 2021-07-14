@@ -24,8 +24,9 @@ describe('InventoryController', () => {
   })
 
   describe('POST /inventories', () => {
+    const url = '/inventories'
     it('400s if time is missing', async () => {
-      const result = await request.post('/inventories')
+      const result = await request.post(url)
         .send({
           maxSize: 4,
           maxParties: 3,
@@ -39,7 +40,7 @@ describe('InventoryController', () => {
     })
 
     it('400s if maxSize is missing', async () => {
-      const result = await request.post('/inventories')
+      const result = await request.post(url)
         .send({
           time: '01:00',
           maxParties: 3,
@@ -53,7 +54,7 @@ describe('InventoryController', () => {
     })
 
     it('400s if maxParties is missing', async () => {
-      const result = await request.post('/inventories')
+      const result = await request.post(url)
         .send({
           time: '01:00',
           maxSize: 4,
@@ -67,7 +68,7 @@ describe('InventoryController', () => {
     })
 
     it('400s if the time is invalid', async () => {
-      const result = await request.post('/inventories')
+      const result = await request.post(url)
         .send({
           time: 'HH:MM',
           maxSize: 4,
@@ -82,7 +83,7 @@ describe('InventoryController', () => {
     })
 
     it('400s if the interval is invalid', async () => {
-      const result = await request.post('/inventories')
+      const result = await request.post(url)
         .send({
           time: '01:01',
           maxSize: 4,
@@ -97,7 +98,7 @@ describe('InventoryController', () => {
     })
 
     it('400s if maxSize is not a number', async () => {
-      const result = await request.post('/inventories')
+      const result = await request.post(url)
         .send({
           time: '01:00',
           maxSize: '4',
@@ -112,7 +113,7 @@ describe('InventoryController', () => {
     })
 
     it('400s if maxParties is not a number', async () => {
-      const result = await request.post('/inventories')
+      const result = await request.post(url)
         .send({
           time: '01:00',
           maxSize: 4,
@@ -127,7 +128,7 @@ describe('InventoryController', () => {
     })
 
     it('200s on successful creation', async () => {
-      const result = await request.post('/inventories')
+      const result = await request.post(url)
         .send({
           time: '01:00',
           maxSize: 4,
@@ -147,7 +148,7 @@ describe('InventoryController', () => {
     })
 
     it('400s when trying to create a duplicate configuration', async () => {
-      const result = await request.post('/inventories')
+      const result = await request.post(url)
         .send({
           time: '01:00',
           maxSize: 4,

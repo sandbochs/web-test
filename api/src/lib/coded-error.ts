@@ -32,5 +32,11 @@ export const errors = {
     MISSING_PARAMS: { code: 1002, status: 400, message: `'time', 'maxSize' and 'maxParties' must be provided` },
     INVALID_MAX_SIZE: { code: 1003, status: 400, message: `'maxSize' must be a number` },
     INVALID_MAX_PARTIES: { code: 1004, status: 400, message: `'maxParties' must be a number` },
+  },
+
+  // Reservation Specific Errors
+  reservation: {
+    MISSING_INVENTORY: { code: 1100, status: 400, message: 'Inventory not configured for that time' },
+    MAX_RESERVATIONS: { code: 1102, status: 400, message: 'No more reservations available for that time' }
   }
 }
