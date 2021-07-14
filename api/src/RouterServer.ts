@@ -4,6 +4,7 @@ import { Server } from '@overnightjs/core'
 import cors from 'cors'
 import * as controllers from './controllers/index'
 import Logger from './logger'
+import * as middlewares from './middlewares'
 
 export class RouterServer extends Server {
   constructor() {
@@ -17,6 +18,8 @@ export class RouterServer extends Server {
     )
     this.app.use(morgan('combined'))
     this.setupControllers()
+
+    this.app.use(middlewares.errorMiddleware)
   }
 
   private setupControllers(): void {
@@ -38,5 +41,9 @@ export class RouterServer extends Server {
     this.app.listen(port, () => {
       Logger.info(`Server listening on port: ${port}`)
     })
+  }
+
+  public getApp() {
+    return this.app;
   }
 }

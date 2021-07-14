@@ -21,7 +21,8 @@ export class CodedError extends Error {
 export const errors = {
   // Generic API errors
   api: {
-  INVALID_TIME: { code: 600, status: 400, message: `'time' must be a ISO-8601 date string formatted as HH:MM` },
+    INTERNAL_ERROR: { code: 500, status: 500, message: 'Internal Server Error' },
+    INVALID_TIME: { code: 600, status: 400, message: `'time' must be a ISO-8601 date string formatted as HH:MM` },
   },
 
   // Inventory Specific Errors
