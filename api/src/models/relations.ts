@@ -5,5 +5,6 @@ import { DaysInventory, Inventory, Reservation } from './index';
 export function defineRelations() {
   Inventory.hasMany(DaysInventory)
   DaysInventory.belongsTo(Inventory)
+  DaysInventory.hasMany(Reservation)
   Reservation.belongsTo(DaysInventory)
 }

@@ -1,6 +1,6 @@
 import supertest from 'supertest'
 
-import { Inventory, Reservation } from '../models'
+import { DaysInventory, Inventory, Reservation } from '../models'
 import { errors } from '../lib/coded-error'
 import { server } from '../index'
 
@@ -17,6 +17,8 @@ const {
 
 describe('ReservationController', () => {
   afterEach(async () => {
+    await Reservation.destroy({ truncate: true, cascade: true })
+    await DaysInventory.destroy({ truncate: true, cascade: true })
     await Inventory.destroy({ truncate: true, cascade: true })
   })
 
@@ -37,24 +39,98 @@ describe('ReservationController', () => {
       })
     })
 
-    it.only('200...', async () => {
+    it('when inventory maxSize === size', async () => {
+      const maxSize = 4;
+      const maxParties = 3;
       const iRes = await request.post('/inventories')
         .send({
           startTime: '13:00',
           endTime: '15:00',
-          maxSize: 4,
-          maxParties: 3,
+          maxSize,
+          maxParties,
         })
       expect(iRes.status).toBe(200)
 
+      for (let i=0; i < maxParties; i++) {
+        const result = await request.post(url)
+          .send({
+            name: 'Valentino Rossi',
+            email: 'vr46@yamaha.com',
+            date: '2020-11-01',
+            time: '13:30',
+            size: maxSize,
+          })
+
+        expect(result.status).toBe(200)
+      }
+
       const result = await request.post(url)
         .send({
+          name: 'Valentino Rossi',
+          email: 'vr46@yamaha.com',
           date: '2020-11-01',
           time: '13:30',
-          size: 4,
+          size: maxSize,
+        })
+
+      expect(result.status).toBe(400)
+    })
+
+    it('when inventory maxSize > size', async () => {
+      const maxSize = 4;
+      const maxParties = 3;
+      const iRes = await request.post('/inventories')
+        .send({
+          startTime: '13:00',
+          endTime: '15:00',
+          maxSize,
+          maxParties,
+        })
+      expect(iRes.status).toBe(200)
+
+      const iRes2 = await request.post('/inventories')
+        .send({
+          startTime: '13:00',
+          endTime: '15:00',
+          maxSize: 10,
+          maxParties: 1,
+        })
+      expect(iRes2.status).toBe(200)
+
+      for (let i=0; i < maxParties; i++) {
+        const result = await request.post(url)
+          .send({
+            name: 'Valentino Rossi',
+            email: 'vr46@yamaha.com',
+            date: '2020-11-01',
+            time: '13:30',
+            size: maxSize,
+          })
+
+        expect(result.status).toBe(200)
+      }
+
+      const result = await request.post(url)
+        .send({
+          name: 'Valentino Rossi',
+          email: 'vr46@yamaha.com',
+          date: '2020-11-01',
+          time: '13:30',
+          size: maxSize,
         })
 
       expect(result.status).toBe(200)
+
+      const result2 = await request.post(url)
+        .send({
+          name: 'Valentino Rossi',
+          email: 'vr46@yamaha.com',
+          date: '2020-11-01',
+          time: '13:30',
+          size: maxSize,
+        })
+
+      expect(result2.status).toBe(400)
     })
   })
 });

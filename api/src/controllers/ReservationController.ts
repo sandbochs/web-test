@@ -31,44 +31,48 @@ export class ReservationController {
       }
 
       // Check if we can book a reservation
+      let DaysInventoryId;
       for (const inventory of inventories) {
         let [daysInventory] = inventory.DaysInventories
-        let shouldCreateReservation = false;
         if (daysInventory == null) {
           // Short circuit, no reservations created for this time slot yet
           daysInventory = new DaysInventory({
             date: date,
             time: time,
-            inventoryId: inventory.id
+            InventoryId: inventory.id
           })
 
           await daysInventory.save()
-          shouldCreateReservation = true
+          DaysInventoryId = daysInventory.id;
         } else {
           // There are existing reservations, check the count
           const reservations = await daysInventory.getReservations()
           if (reservations.length < inventory.maxParties) {
-            shouldCreateReservation = true
+            DaysInventoryId = daysInventory.id;
           }
         }
 
-        if (!shouldCreateReservation) {
-          throw new CodedError(errors.MAX_RESERVATIONS)
+        if (DaysInventoryId != null) {
+          break;
         }
-
-        const reservation = new Reservation({
-          name,
-          email,
-          size,
-          date,
-          time,
-          daysInventoryId: daysInventory.id,
-        })
-
-        res.json(reservation);
       }
 
-      res.json(200)
+      if (DaysInventoryId == null) {
+        throw new CodedError(errors.MAX_RESERVATIONS)
+      }
+
+      const reservation = new Reservation({
+        name,
+        email,
+        size,
+        date,
+        time,
+        DaysInventoryId,
+      })
+
+      await reservation.save()
+
+      res.json(reservation);
     } catch (error) {
       next(error)
     }
