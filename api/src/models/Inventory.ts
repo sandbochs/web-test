@@ -35,7 +35,11 @@ export class Inventory extends Model<Inventory> {
 
   @AllowNull(false)
   @Column(DataType.TIME)
-  time: string
+  startTime: string
+
+  @AllowNull(false)
+  @Column(DataType.TIME)
+  endTime: string
 
   @AllowNull(false)
   @Column
@@ -49,16 +53,19 @@ export class Inventory extends Model<Inventory> {
   createdAt: string
 
   static validate(params: { [key: string]: any }): void {
-    const { time, maxSize, maxParties } = params;
-    if (time == null || maxSize == null || maxParties == null) {
+    const { startTime, endTime, maxSize, maxParties } = params;
+    if (startTime == null || endTime == null || maxSize == null || maxParties == null) {
       throw new CodedError(errors.MISSING_PARAMS)
     }
 
-    if (!isTimeString(time)) {
+    if (!isTimeString(startTime) || !isTimeString(endTime)) {
       throw new CodedError(apiErrors.INVALID_TIME)
     }
 
-    if (!isValidInterval(time, reservationIntervalMinutes)) {
+    if (
+      !isValidInterval(startTime, reservationIntervalMinutes) ||
+      !isValidInterval(endTime, reservationIntervalMinutes)
+      ) {
       throw new CodedError(errors.INVALID_INTERVAL)
     }
 

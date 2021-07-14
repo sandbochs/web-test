@@ -25,9 +25,25 @@ describe('InventoryController', () => {
 
   describe('POST /inventories', () => {
     const url = '/inventories'
-    it('400s if time is missing', async () => {
+    it('400s if startTime is missing', async () => {
       const result = await request.post(url)
         .send({
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
+      expect(result.status).toBe(400)
+      expect(result.body).toStrictEqual({
+        code: MISSING_PARAMS.code,
+        error: MISSING_PARAMS.message,
+      })
+    })
+
+    it('400s if endTime is missing', async () => {
+      const result = await request.post(url)
+        .send({
+          startTime: '03:00',
           maxSize: 4,
           maxParties: 3,
         })
@@ -42,7 +58,8 @@ describe('InventoryController', () => {
     it('400s if maxSize is missing', async () => {
       const result = await request.post(url)
         .send({
-          time: '01:00',
+          startTime: '01:00',
+          endTime: '03:00',
           maxParties: 3,
         })
 
@@ -56,7 +73,8 @@ describe('InventoryController', () => {
     it('400s if maxParties is missing', async () => {
       const result = await request.post(url)
         .send({
-          time: '01:00',
+          startTime: '01:00',
+          endTime: '03:00',
           maxSize: 4,
         })
 
@@ -67,10 +85,11 @@ describe('InventoryController', () => {
       })
     })
 
-    it('400s if the time is invalid', async () => {
+    it('400s if the startTime is invalid', async () => {
       const result = await request.post(url)
         .send({
-          time: 'HH:MM',
+          startTime: 'HH:MM',
+          endTime: '03:00',
           maxSize: 4,
           maxParties: 3,
         })
@@ -82,10 +101,43 @@ describe('InventoryController', () => {
       })
     })
 
-    it('400s if the interval is invalid', async () => {
+    it('400s if the endTime is invalid', async () => {
       const result = await request.post(url)
         .send({
-          time: '01:01',
+          startTime: '03:00',
+          endTime: 'HH:MM',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
+      expect(result.status).toBe(400)
+      expect(result.body).toStrictEqual({
+        code: INVALID_TIME.code,
+        error: INVALID_TIME.message,
+      })
+    })
+
+    it('400s if the startTime interval is invalid', async () => {
+      const result = await request.post(url)
+        .send({
+          startTime: '01:01',
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
+      expect(result.status).toBe(400)
+      expect(result.body).toStrictEqual({
+        code: INVALID_INTERVAL.code,
+        error: INVALID_INTERVAL.message,
+      })
+    })
+
+    it('400s if the endTime interval is invalid', async () => {
+      const result = await request.post(url)
+        .send({
+          startTime: '01:00',
+          endTime: '03:01',
           maxSize: 4,
           maxParties: 3,
         })
@@ -100,7 +152,8 @@ describe('InventoryController', () => {
     it('400s if maxSize is not a number', async () => {
       const result = await request.post(url)
         .send({
-          time: '01:00',
+          startTime: '01:00',
+          endTime: '03:00',
           maxSize: '4',
           maxParties: 3,
         })
@@ -115,7 +168,8 @@ describe('InventoryController', () => {
     it('400s if maxParties is not a number', async () => {
       const result = await request.post(url)
         .send({
-          time: '01:00',
+          startTime: '01:00',
+          endTime: '03:00',
           maxSize: 4,
           maxParties: '3',
         })
@@ -130,7 +184,8 @@ describe('InventoryController', () => {
     it('200s on successful creation', async () => {
       const result = await request.post(url)
         .send({
-          time: '01:00',
+          startTime: '01:00',
+          endTime: '03:00',
           maxSize: 4,
           maxParties: 3,
         })
@@ -139,7 +194,8 @@ describe('InventoryController', () => {
 
       const { id, time, maxSize, maxParties } = result.body;
       const expected = {
-        time: '01:00:00',
+        startTime: '01:00',
+        endTime: '03:00',
         maxSize: 4,
         maxParties: 3
       }
@@ -150,7 +206,56 @@ describe('InventoryController', () => {
     it('400s when trying to create a duplicate configuration', async () => {
       const result = await request.post(url)
         .send({
-          time: '01:00',
+          startTime: '01:00',
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
+      expect(result.status).toBe(400)
+      expect(result.body).toStrictEqual({
+        code: ALREADY_EXISTS.code,
+        error: ALREADY_EXISTS.message,
+      })
+    })
+
+    it('400s when trying to create a duplicate configuration that is a subset', async () => {
+      const result = await request.post(url)
+        .send({
+          startTime: '02:00',
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
+      expect(result.status).toBe(400)
+      expect(result.body).toStrictEqual({
+        code: ALREADY_EXISTS.code,
+        error: ALREADY_EXISTS.message,
+      })
+    })
+
+    it('400s when trying to create a duplicate configuration that is a superset', async () => {
+      const result = await request.post(url)
+        .send({
+          startTime: '00:00',
+          endTime: '04:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
+      expect(result.status).toBe(400)
+      expect(result.body).toStrictEqual({
+        code: ALREADY_EXISTS.code,
+        error: ALREADY_EXISTS.message,
+      })
+    })
+
+    it('400s when trying to create a duplicate configuration that overlaps', async () => {
+      const result = await request.post(url)
+        .send({
+          startTime: '02:00',
+          endTime: '04:00',
           maxSize: 4,
           maxParties: 3,
         })

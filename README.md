@@ -9,24 +9,26 @@ There are three main requirements to consider:
 - Restaurants should be able to define how many reservations of a specific party size to take every 15 minutes.
 - Restaurants should be able to book a reservation on behalf of guests.
 - Reservations should never exceed inventory.
+- Inventory should be configurable via a range.
 
 # Questions
 - Should the application handle multiple restaurants? (Not a hard requirement)
 - Is concurrency when booking a reservation an issue? (No)
 - Should restaurants be allowed to update / delete inventory? (Not a hard requirement)
+- Should a party of 1 be allowed to book a table for 6? (Yes)
 
 # Approach
 ## Data Model
 inventories / InventoryModel
 - id serial
-- time time
+- startTime time
+- endTime time
 - maxSize integer
 - maxParties integer
 - createdAt
 
 reservations / ReservationModel
 - id serial
-- inventory_id fkey inventories.id
 - name text
 - email text
 - size integer
@@ -60,7 +62,8 @@ Error responses will include the error (string) and code (integer) properties. T
 #### Body
 ```js
 {
-  time: ISO-8601 time string, // Format: HH:MM API expects UTC timezone
+  startTime: ISO-8601 time string, // Format: HH:MM API expects UTC timezone
+  endTime: ISO-8601 time string, // Format: HH:MM API expects UTC timezone
   maxSize: number, // max number of guests for a reservation
   maxParties: number, // max number of reservations allowed to be booked during this timeslot and party size
 }
