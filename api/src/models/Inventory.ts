@@ -3,6 +3,7 @@ import {
   Column,
   CreatedAt,
   DataType,
+  Index,
   Model,
   PrimaryKey, Table,
 } from 'sequelize-typescript'
@@ -19,25 +20,19 @@ const reservationIntervalMinutes = 15;
 
 const { inventory: errors, api: apiErrors } = allErrors;
 
-@Table({
-  tableName: 'inventories',
-  indexes: [
-    {
-      unique: true,
-      fields: ['time', 'maxSize'],
-    }
-  ]
-})
+@Table({ tableName: 'inventories' })
 export class Inventory extends Model<Inventory> {
   @PrimaryKey
   @Column({ autoIncrement: true })
   id: number
 
   @AllowNull(false)
+  @Index
   @Column(DataType.TIME)
   startTime: string
 
   @AllowNull(false)
+  @Index
   @Column(DataType.TIME)
   endTime: string
 
@@ -85,15 +80,68 @@ export class Inventory extends Model<Inventory> {
       where: {
         [Op.and]: {
           maxSize: {
-            [Op.or]: {
-              [Op.eq]: size,
-              [Op.gt]: size,
-            }
+            [Op.gte]: size
           },
-          time: {
-            [Op.eq]: time,
-          }
+          // time: {
+          //   [Op.eq]: time,
+          // }
         }
+      }
+    })
+  }
+
+  static async findOverlapping(params: { startTime: string, endTime: string, maxSize: number }) {
+    const { startTime, endTime, maxSize } = params;
+
+    return Inventory.findAll({
+      where: {
+        [Op.and]: [{
+          maxSize: {
+            [Op.eq]: maxSize
+          },
+          // TODO: revisit for potential simplification
+          [Op.or]: [{
+            // superset
+            [Op.and]: [{
+              startTime: {
+                [Op.gte]: startTime,
+              },
+              endTime: {
+                [Op.gte]: endTime,
+              }
+            }],
+
+            // subset
+            [Op.and]: [{
+              startTime: {
+                [Op.lte]: startTime,
+              },
+              endTime: {
+                [Op.lte]: endTime,
+              }
+            }],
+
+            // overlapping start
+            [Op.and]: [{
+              startTime: {
+                [Op.gte]: startTime,
+              },
+              endTime: {
+                [Op.lte]: endTime,
+              }
+            }],
+
+            // overlapping end
+            [Op.and]: [{
+              startTime: {
+                [Op.lte]: startTime,
+              },
+              endTime: {
+                [Op.gte]: endTime,
+              }
+            }],
+          }]
+        }]
       }
     })
   }

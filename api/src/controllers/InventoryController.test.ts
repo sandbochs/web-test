@@ -19,7 +19,7 @@ const {
 } = errors
 
 describe('InventoryController', () => {
-  afterAll(async () => {
+  afterEach(async () => {
     await Inventory.destroy({ truncate: true })
   })
 
@@ -192,18 +192,26 @@ describe('InventoryController', () => {
 
       expect(result.status).toBe(200)
 
-      const { id, time, maxSize, maxParties } = result.body;
+      const { id, startTime, endTime, maxSize, maxParties } = result.body;
       const expected = {
-        startTime: '01:00',
-        endTime: '03:00',
+        startTime: '01:00:00',
+        endTime: '03:00:00',
         maxSize: 4,
         maxParties: 3
       }
-      expect({ time, maxSize, maxParties}).toStrictEqual(expected);
+      expect({ startTime, endTime, maxSize, maxParties}).toStrictEqual(expected);
       expect(typeof id).toBe('number')
     })
 
     it('400s when trying to create a duplicate configuration', async () => {
+      await request.post(url)
+        .send({
+          startTime: '01:00',
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
       const result = await request.post(url)
         .send({
           startTime: '01:00',
@@ -220,6 +228,14 @@ describe('InventoryController', () => {
     })
 
     it('400s when trying to create a duplicate configuration that is a subset', async () => {
+      await request.post(url)
+        .send({
+          startTime: '01:00',
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
       const result = await request.post(url)
         .send({
           startTime: '02:00',
@@ -236,6 +252,14 @@ describe('InventoryController', () => {
     })
 
     it('400s when trying to create a duplicate configuration that is a superset', async () => {
+      await request.post(url)
+        .send({
+          startTime: '01:00',
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
       const result = await request.post(url)
         .send({
           startTime: '00:00',
@@ -252,6 +276,14 @@ describe('InventoryController', () => {
     })
 
     it('400s when trying to create a duplicate configuration that overlaps', async () => {
+      await request.post(url)
+        .send({
+          startTime: '01:00',
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
       const result = await request.post(url)
         .send({
           startTime: '02:00',
