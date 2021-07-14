@@ -19,9 +19,9 @@ There are three main requirements to consider:
 ## Data Model
 inventories / InventoryModel
 - id serial
-- time timestamptz
-- max_size integer
-- max_parties integer
+- time time
+- maxSize integer
+- maxParties integer
 - createdAt
 
 reservations / ReservationModel
@@ -30,7 +30,8 @@ reservations / ReservationModel
 - name text
 - email text
 - size integer
-- time timestamptz // duplicated data
+- date date
+- time time // duplicated data
 - createdAt
 
 ### Tradeoffs
@@ -59,9 +60,9 @@ Error responses will include the error (string) and code (integer) properties. T
 #### Body
 ```js
 {
-  time: ISO-8601 date string, // reservation time
-  max_size: number, // max number of guests for a reservation
-  max_parties: number, // max number of reservations allowed to be booked during this timeslot and party size
+  time: ISO-8601 time string, // Format: HH:MM API expects UTC timezone
+  maxSize: number, // max number of guests for a reservation
+  maxParties: number, // max number of reservations allowed to be booked during this timeslot and party size
 }
 ```
 
@@ -77,12 +78,29 @@ Error responses will include the error (string) and code (integer) properties. T
 #### Errors
 `400` Status Code Errors
 
+
+```js
+{ code: 500, error: `'time' must be a ISO-8601 date string formatted as HH:MM` }
+```
+
 ```js
 { code: 1000, error: 'Invalid time, reservations can only be accepted in 15 minute intervals' }
 ```
 
 ```js
 { code: 1001, error: 'Inventory already exists for the specified time and party size' }
+```
+
+```js
+{ code: 1002, error: `'time' and 'maxSize' must be provided` }
+```
+
+```js
+{ code: 1003, error: `'maxSize' must be a number` }
+```
+
+```js
+{ code: 1004, error: `'maxParties' must be a number` }
 ```
 
 ### Create Reservation
@@ -94,7 +112,8 @@ Error responses will include the error (string) and code (integer) properties. T
   name: string, // guest name
   email: string, // guest email
   size: number, // number in party
-  time: ISO-8601 date string,
+  date: string, // Format: YYYY-MM-DD
+  time: ISO-8601 time string, // Format: HH:MM API expects UTC timezone
 }
 ```
 
@@ -126,12 +145,12 @@ Since we don't have to worry about concurrency this is quite straight forward. T
 
 ```js
 const inventory = await query('select id, max_size, max_parties from inventories where size <= max_size and time = time;');
-const reservationCount = await query('select count(id) from reservations where inventory_id=inventoryId');
+const reservationCount = await query('select count(id) from reservations where date = date and time = time;');
 if (reservationCount >= inventory.maxSize) {
   throw HTTPError(400, 'Inventory unavailable');
 }
 
-const reservation = await query('insert into reservations (inventory_id) values (inventory.id)');
+const reservation = await query('insert into reservations (date, time) values (date, time)');
 ```
 
 # Extensability

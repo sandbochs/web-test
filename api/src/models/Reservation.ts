@@ -3,7 +3,7 @@ import {
   AllowNull,
   Column,
   CreatedAt,
-  ForeignKey,
+  DataType,
   Model,
   PrimaryKey, Table,
 } from 'sequelize-typescript'
@@ -27,8 +27,12 @@ export class Reservation extends Model<Reservation> {
   size: number
 
   @AllowNull(false)
-  @Column
-  time: Date
+  @Column(DataType.DATEONLY)
+  date: string
+
+  @AllowNull(false)
+  @Column(DataType.TIME)
+  time: string
 
   @CreatedAt
   createdAt: string
