@@ -20,7 +20,7 @@ const {
 
 describe('InventoryController', () => {
   afterEach(async () => {
-    await Inventory.destroy({ truncate: true })
+    await Inventory.destroy({ truncate: true, cascade: true })
   })
 
   describe('POST /inventories', () => {
@@ -275,7 +275,31 @@ describe('InventoryController', () => {
       })
     })
 
-    it('400s when trying to create a duplicate configuration that overlaps', async () => {
+    it('400s when trying to create a duplicate configuration that overlaps from start', async () => {
+      await request.post(url)
+        .send({
+          startTime: '01:00',
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
+      const result = await request.post(url)
+        .send({
+          startTime: '00:00',
+          endTime: '03:00',
+          maxSize: 4,
+          maxParties: 3,
+        })
+
+      expect(result.status).toBe(400)
+      expect(result.body).toStrictEqual({
+        code: ALREADY_EXISTS.code,
+        error: ALREADY_EXISTS.message,
+      })
+    })
+
+    it('400s when trying to create a duplicate configuration that overlaps from end', async () => {
       await request.post(url)
         .send({
           startTime: '01:00',

@@ -1,6 +1,7 @@
 require('source-map-support/register')
 import { Sequelize } from 'sequelize-typescript'
 import { RouterServer } from './RouterServer'
+import { defineRelations } from './models/relations'
 import * as models from './models'
 
 const port = process.env.PORT == null ? 8080 : parseInt(process.env.PORT, 10)
@@ -17,6 +18,8 @@ export const server = new RouterServer()
     logging: process.env.LOG === 'debug' ? console.log : false,
     models: Object.keys(models).map(k => models[k]),
   })
+
+  defineRelations()
 
   await sequelize.sync({
     alter: true

@@ -14,6 +14,7 @@ import {
   isTimeString,
   isValidInterval,
 } from '../lib/validations';
+import { DaysInventory } from './DaysInventory'
 
 // TODO: should be configurable
 const reservationIntervalMinutes = 15;
@@ -73,20 +74,23 @@ export class Inventory extends Model<Inventory> {
     }
   }
 
-  static async findBySizeAndTime(params: { size: number, time: string }) {
-    const { size, time } = params
+  static async findBySizeAndTime(params: { size: number, time: string, date: string }) {
+    const { size, time, date } = params
 
-    return Inventory.findOne({
+    return Inventory.findAll({
+      order: [['maxSize', 'ASC']],
       where: {
-        [Op.and]: {
-          maxSize: {
-            [Op.gte]: size
-          },
-          // time: {
-          //   [Op.eq]: time,
-          // }
-        }
-      }
+        [Op.and]: [
+          { maxSize: { [Op.gte]: size } },
+          { startTime: { [Op.lte]: time } },
+          { endTime: { [Op.gte]: time } }
+        ]
+      },
+      include: [{
+        model: DaysInventory,
+        required: false, 
+        where: { date: { [Op.eq]: date } } 
+      }]
     })
   }
 
@@ -95,53 +99,37 @@ export class Inventory extends Model<Inventory> {
 
     return Inventory.findAll({
       where: {
-        [Op.and]: [{
-          maxSize: {
-            [Op.eq]: maxSize
-          },
+        [Op.and]: [
+          { maxSize: { [Op.eq]: maxSize } },
           // TODO: revisit for potential simplification
-          [Op.or]: [{
-            // superset
-            [Op.and]: [{
-              startTime: {
-                [Op.gte]: startTime,
+          {
+            [Op.or]: [
+              // Superset
+              {
+                startTime: { [Op.lte]: startTime },
+                endTime: { [Op.gte]: endTime },
               },
-              endTime: {
-                [Op.gte]: endTime,
-              }
-            }],
 
-            // subset
-            [Op.and]: [{
-              startTime: {
-                [Op.lte]: startTime,
+              // Subset
+              {
+                startTime: { [Op.gte]: startTime },
+                endTime: { [Op.lte]: endTime },
               },
-              endTime: {
-                [Op.lte]: endTime,
-              }
-            }],
 
-            // overlapping start
-            [Op.and]: [{
-              startTime: {
-                [Op.gte]: startTime,
+              // Overlapping start
+              {
+                startTime: { [Op.lte]: startTime },
+                endTime: { [Op.lte]: endTime },
               },
-              endTime: {
-                [Op.lte]: endTime,
-              }
-            }],
 
-            // overlapping end
-            [Op.and]: [{
-              startTime: {
-                [Op.lte]: startTime,
+              // Overlapping end
+              {
+                startTime: { [Op.gte]: startTime },
+                endTime: { [Op.gte]: endTime },
               },
-              endTime: {
-                [Op.gte]: endTime,
-              }
-            }],
-          }]
-        }]
+            ]
+          }
+        ]
       }
     })
   }

@@ -1,4 +1,3 @@
-
 import {
   AllowNull,
   Column,
@@ -8,7 +7,7 @@ import {
   Model,
   PrimaryKey, Table,
 } from 'sequelize-typescript'
-
+import { Op } from 'sequelize'
 @Table({ tableName: 'reservations' })
 export class Reservation extends Model<Reservation> {
   @PrimaryKey
